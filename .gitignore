@@ -122,6 +122,13 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# devDB files
+db.sqlite3
+db.sqlite3-2
+/migrations
+.migrations
+migrations/
 .dmypy.json
 dmypy.json
 
