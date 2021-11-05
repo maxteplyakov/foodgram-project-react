@@ -17,3 +17,15 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Ingredient.objects.all()
     # filter_backends = (DjangoFilterBackend,)
     filter_class = IngredientsFilter
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = models.Recipe.objects.all()
+    serializer_class = serializers.RecipeSerializer
+
+
+class IngredientsInRecipeViewSet(viewsets.ReadOnlyModelViewSet):
+    # permission_classes = [IsAdmin | ReadOnly]
+    pagination_class = None
+    serializer_class = serializers.IngredientsInRecepieSerializer
+    queryset = models.IngredientsInRecepie.objects.all()

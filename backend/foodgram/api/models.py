@@ -6,8 +6,8 @@ User = get_user_model()
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200, blank=False, null=False)
-    color = models.CharField(max_length=7, blank=False, null=True)
+    name = models.CharField(max_length=200, blank=False, null=False, unique=True)
+    color = models.CharField(max_length=7, blank=False, null=True, unique=True)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -24,14 +24,16 @@ class Ingredient(models.Model):
     def __str__(self):
         return self.name
 
-class Recepie(models.Model):
+
+class Recipe(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='recipies',  blank=False, null=False)
     name = models.CharField(max_length=200, blank=False, null=False, verbose_name='Название блюда')
     image = models.ImageField(upload_to='Recepies_pic/', blank=False, null=False, verbose_name='Изображение')
+    # image = Base64ImageField(max_length=None, use_url=True)
     text = models.TextField(max_length=2048, blank=False, null=False, verbose_name='Текстовое описание')
     ingredients = models.ManyToManyField(
-        Ingredient, through='IngredientsInRecepie', through_fields=('recepie', 'ingredient'), blank=False)
+        Ingredient, through='IngredientsInRecepie', through_fields=('recipe', 'ingredient'), blank=False)
     tags = models.ManyToManyField(Tag, blank=False)
     cooking_time = models.PositiveSmallIntegerField(blank=False, null=False, verbose_name='Время приготовления')
     pub_date = models.DateTimeField('date published', auto_now_add=True)
@@ -43,9 +45,10 @@ class Recepie(models.Model):
         return self.name
 
 
+
 class IngredientsInRecepie(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    recepie = models.ForeignKey(Recepie, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(blank=False, null=False)
 
 
