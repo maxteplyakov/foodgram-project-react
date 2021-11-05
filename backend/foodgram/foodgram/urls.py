@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'api/auth/', include('djoser.urls.authtoken')),
     re_path(r'api/', include('users.urls')),
+    path('api/', include('api.urls'))
 ]
