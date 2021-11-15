@@ -1,40 +1,34 @@
-from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import get_user_model
 from django.core import exceptions as django_exceptions
 from django.db import IntegrityError, transaction
-from rest_framework import exceptions, serializers
-from rest_framework.exceptions import ValidationError
-
-from djoser import utils
-from djoser.compat import get_user_email, get_user_email_field_name
+from rest_framework import serializers
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
 
-from .models import MyCustomUser
+from .models import MyCustomUser, Subscriptions
+
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = User
         fields = [
             'email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed'
         ]
-        # fields = tuple(User.REQUIRED_FIELDS) + (
-        #     settings.USER_ID_FIELD,
-        #     settings.LOGIN_FIELD,
-        # )
-        # read_only_fields = (settings.LOGIN_FIELD,)
 
-    # def update(self, instance, validated_data):
-    #     email_field = get_user_email_field_name(User)
-    #     if settings.SEND_ACTIVATION_EMAIL and email_field in validated_data:
-    #         instance_email = get_user_email(instance)
-    #         if instance_email != validated_data[email_field]:
-    #             instance.is_active = False
-    #             instance.save(update_fields=["is_active"])
-    #     return super().update(instance, validated_data)
+    def get_is_subscribed(self, obj):
+        print(obj)
+        print(self.context)
+        request = self.context.get("request")
+        print(request)
+        if request.user.is_authenticated and Subscriptions.objects.filter(author=obj, subscriber=request.user).exists():
+            return True
+        return False
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -50,29 +44,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MyCustomUser
-        # fields = tuple(User.REQUIRED_FIELDS) + (
-        #     settings.LOGIN_FIELD,
-        #     settings.USER_ID_FIELD,
-        #     "password",
-        #     "email"
-        # )
         fields = ['email', 'id', 'username', 'first_name', 'last_name', 'password']
 
-    read_only_fields = ['id'] #(settings.LOGIN_FIELD,)
+    read_only_fields = ['id']
     write_only_fields = ['password']
-    # def validate(self, attrs):
-    #     user = User(**attrs)
-    #     password = attrs.get("password")
-    #
-    #     try:
-    #         validate_password(password, user)
-    #     except django_exceptions.ValidationError as e:
-    #         serializer_error = serializers.as_serializer_error(e)
-    #         raise serializers.ValidationError(
-    #             {"password": serializer_error["non_field_errors"]}
-    #         )
-    #
-    #     return attrs
 
     def create(self, validated_data):
         try:
@@ -94,22 +69,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
 
 
-# class UserCreatePasswordRetypeSerializer(UserCreateSerializer):
-#     default_error_messages = {
-#         "password_mismatch": settings.CONSTANTS.messages.PASSWORD_MISMATCH_ERROR
-#     }
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.fields["re_password"] = serializers.CharField(
-#             style={"input_type": "password"}
-#         )
-#
-#     def validate(self, attrs):
-#         self.fields.pop("re_password", None)
-#         re_password = attrs.pop("re_password")
-#         attrs = super().validate(attrs)
-#         if attrs["password"] == re_password:
-#             return attrs
-#         else:
-#             self.fail("password_mismatch")
+# class SubscriptionSerializer(UserSerializer):
+#     recipes = api_serializers.FavoriteSerializer(many=True, source='recipies')
+#     # recipes = serializers.SerializerMethodField(read_only=True)
+#     #
+#     # def get_recipes(self, obj):
+#     #     request = self.context.get("request")
+#     #     if request.user.is_authenticated and Subscriptions.objects.filter(author=obj, subscriber=request.user).exists():
+#     #         return True
+#     #     return False

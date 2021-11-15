@@ -37,6 +37,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = models.Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -103,8 +104,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             print(f'{ingredient.name} ({ingredient.measurement_unit}) - {ingredient.total_amount} \n')
 
         fs = FileSystemStorage()
-        # filename = 'mypdf.pdf'
-        with open('media/'+filename, 'w') as file:
+        with open('media/'+filename, 'w', encoding='utf-8') as file:
             for ingredient in ingredients_amount:
                 file.write(f'{ingredient.name} ({ingredient.measurement_unit}) - {ingredient.total_amount} \n')
 
@@ -115,15 +115,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return response
         else:
             return HttpResponseNotFound('The requested pdf was not found in our server.')
-
-        # response = FileResponse(open('media/'+filename, 'rb'), as_attachment=True, filename=filename)
-        # return response
-
-
-
-
-# class IngredientsInRecipeViewSet(viewsets.ReadOnlyModelViewSet):
-#     # permission_classes = [IsAdmin | ReadOnly]
-#     pagination_class = None
-#     serializer_class = serializers.IngredientsInRecepieSerializer
-#     queryset = models.IngredientsInRecepie.objects.all()
