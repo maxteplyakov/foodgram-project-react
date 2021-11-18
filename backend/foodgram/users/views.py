@@ -81,22 +81,12 @@ class UserViewSet(viewsets.ModelViewSet):
         elif settings.SEND_CONFIRMATION_EMAIL:
             settings.EMAIL.confirmation(self.request, context).send(to)
 
-    # def perform_update(self, serializer):
-    #     super().perform_update(serializer)
-    #     user = serializer.instance
-    #     # should we send activation email after update?
-    #     if settings.SEND_ACTIVATION_EMAIL:
-    #         context = {"user": user}
-    #         to = [get_user_email(user)]
-    #         settings.EMAIL.activation(self.request, context).send(to)
-
     @action(["get"], detail=False)
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
 
         if request.method == "GET":
             return self.retrieve(request, *args, **kwargs)
-
 
     @action(["post"], detail=False)
     def set_password(self, request, *args, **kwargs):
@@ -124,19 +114,26 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def subscribe(self, request, id):
         subscriber = request.user
-        author = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, pk=id)
         if request.method == 'GET':
-            # data = {
-            #     'user': user.id,
-            #     'recipe': recipe.id
-            # }
-            serializer = api_serializers.SubscriptionSerializer(author, context={'request': request})
-            print(serializer)
-            # serializer.is_valid(raise_exception=True)
-            Subscriptions.objects.create(author=author, subscriber=subscriber)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data = {
+                'author': author.id,
+                'subscriber': subscriber.id
+            }
+            serializer = api_serializers.SubscriptionSerializer(author, data=data, context={'request': request})
+            if serializer.is_valid(raise_exception=True):
+                Subscriptions.objects.create(author=author, subscriber=subscriber)
 
+                return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            record = get_object_or_404(models.Favorite, user=user, recipe=recipe)
+            record = get_object_or_404(Subscriptions, author=author, subscriber=subscriber)
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # @action(
+        #     detail=False, methods=['GET'],
+        #     permission_classes=[IsAuthenticated],
+        #     serializer_class=[Subscriptions]
+        # )
+        # def subscribtions(self, request):
+        #     return Response(serializer.data, status=status.HTTP_200_OK)

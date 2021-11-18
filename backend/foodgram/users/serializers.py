@@ -14,6 +14,8 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
 
     is_subscribed = serializers.SerializerMethodField(read_only=True)
+    email = serializers.EmailField(read_only=True)
+    username = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
@@ -26,6 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
         print(self.context)
         request = self.context.get("request")
         print(request)
+        print(obj)
         if request.user.is_authenticated and Subscriptions.objects.filter(author=obj, subscriber=request.user).exists():
             return True
         return False
