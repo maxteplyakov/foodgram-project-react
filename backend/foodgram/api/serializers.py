@@ -215,6 +215,49 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Вы не можете подписаться на себя')
         self.initial_data['id'] = author.id
         return data
+
+
+class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField(source='author.email')
+    id = serializers.ReadOnlyField(source='author.id')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+    recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = users.models.Subscriptions
+        fields = [
+            'email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count'
+        ]
+        extra_kwargs = {
+            'author': {'write_only': True},
+            'subscriber': {'write_only': True}
+        }
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get("request")
+        if request.user.is_authenticated and users.models.Subscriptions.objects.filter(
+                author=obj.author, subscriber=request.user
+        ).exists():
+            return True
+        return False
+
+    def get_recipes_count(self, obj):
+        return models.Recipe.objects.filter(author=obj.author).count()
+
+    def get_recipes(self, obj):
+        request = self.context.get("request")
+        print(obj)
+        recipes_limit = int(request.query_params.get('recipes_limit'))
+        limited_queryset = models.Recipe.objects.filter(author=obj.author)[:recipes_limit]
+        return SubscriptionRecipesSerializer(limited_queryset, many=True).data
+
+    # if self.request.query_params.get('recipes_limit'):
+    # class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
+
     # recipes = serializers.SerializerMethodField(read_only=True)
     #
     # def get_recipes(self, obj):

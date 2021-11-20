@@ -19,3 +19,4 @@ class Subscriptions(models.Model):
 
     class Meta:
         unique_together = ['author', 'subscriber']
+        ordering = ['-author__username']

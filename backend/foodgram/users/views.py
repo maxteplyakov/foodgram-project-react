@@ -16,6 +16,7 @@ from djoser.conf import settings
 
 from .serializers import UserSerializer, UserCreateSerializer
 from .models import Subscriptions
+from .paginators import SubscriptionsPagination
 from api import serializers as api_serializers
 from api import models as api_models
 
@@ -107,7 +108,6 @@ class UserViewSet(viewsets.ModelViewSet):
             update_session_auth_hash(self.request, self.request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
     @action(
         detail=True, methods=['GET', 'DELETE'],
         permission_classes=[IsAuthenticated]
@@ -130,10 +130,23 @@ class UserViewSet(viewsets.ModelViewSet):
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        # @action(
-        #     detail=False, methods=['GET'],
-        #     permission_classes=[IsAuthenticated],
-        #     serializer_class=[Subscriptions]
-        # )
-        # def subscribtions(self, request):
-        #     return Response(serializer.data, status=status.HTTP_200_OK)
+    # @action(
+    #     detail=False, methods=['GET'],
+    #     permission_classes=[IsAuthenticated]
+    # )
+    # def subscriptions(self, request):
+    #     user = User.objects.get(pk=request.user.id)
+    #     serializer = api_serializers.CurrentUserSubscriptionSerializer(user, context={'request': request})
+    #           # queryset = User.objects.get(id=request.user.id)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SubscriptionsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = api_serializers.CurrentUserSubscriptionSerializer
+    pagination_class = SubscriptionsPagination
+
+    def get_queryset(self):
+        return Subscriptions.objects.filter(subscriber=self.request.user)
+    # filter_backends = (DjangoFilterBackend,)
+    # filter_class = IngredientsFilter

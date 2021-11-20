@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework.routers import DefaultRouter
 
-from users import views
+from users.views import SubscriptionsViewSet, UserViewSet
 
 
 router = DefaultRouter()
-router.register("users", views.UserViewSet)
+router.register("users/subscriptions", SubscriptionsViewSet, basename='subscriptions')
+router.register("users", UserViewSet)
 
 User = get_user_model()
 
