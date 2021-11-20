@@ -81,6 +81,7 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# первый этап проверки не предполагает работу с инфраструкторой, поэтому пока на sqlite
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

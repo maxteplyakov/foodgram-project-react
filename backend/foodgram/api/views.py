@@ -4,9 +4,6 @@ from django.shortcuts import get_object_or_404
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, HttpResponseNotFound
 from django.db.models import Sum
-
-from django.http import FileResponse
-
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,7 +12,8 @@ from rest_framework.permissions import (
 )
 
 from . import serializers, models
-from .filters import IngredientsFilter
+from .filters import IngredientsFilter, RecipeFilter
+from users.paginators import CustomPageSizePagination
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -38,6 +36,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = models.Recipe.objects.all()
     serializer_class = serializers.RecipeSerializer
     http_method_names = ['get', 'post', 'put', 'delete']
+    pagination_class = CustomPageSizePagination
+    filter_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

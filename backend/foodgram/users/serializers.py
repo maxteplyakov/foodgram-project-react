@@ -24,11 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
     def get_is_subscribed(self, obj):
-        print(obj)
-        print(self.context)
         request = self.context.get("request")
-        print(request)
-        print(obj)
         if request.user.is_authenticated and Subscriptions.objects.filter(author=obj, subscriber=request.user).exists():
             return True
         return False
@@ -70,14 +66,3 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 user.is_active = False
                 user.save(update_fields=["is_active"])
         return user
-
-
-# class SubscriptionSerializer(UserSerializer):
-#     recipes = api_serializers.FavoriteSerializer(many=True, source='recipies')
-#     # recipes = serializers.SerializerMethodField(read_only=True)
-#     #
-#     # def get_recipes(self, obj):
-#     #     request = self.context.get("request")
-#     #     if request.user.is_authenticated and Subscriptions.objects.filter(author=obj, subscriber=request.user).exists():
-#     #         return True
-#     #     return False

@@ -1,24 +1,21 @@
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.timezone import now
-from rest_framework import generics, status, views, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.permissions import (
     AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly,
 )
-
 from djoser import signals, utils
 from djoser.compat import get_user_email
 from djoser.conf import settings
 
-from .serializers import UserSerializer, UserCreateSerializer
+from .serializers import UserCreateSerializer
 from .models import Subscriptions
-from .paginators import SubscriptionsPagination
+from .paginators import CustomPageSizePagination
 from api import serializers as api_serializers
-from api import models as api_models
 
 
 User = get_user_model()
@@ -130,23 +127,11 @@ class UserViewSet(viewsets.ModelViewSet):
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # @action(
-    #     detail=False, methods=['GET'],
-    #     permission_classes=[IsAuthenticated]
-    # )
-    # def subscriptions(self, request):
-    #     user = User.objects.get(pk=request.user.id)
-    #     serializer = api_serializers.CurrentUserSubscriptionSerializer(user, context={'request': request})
-    #           # queryset = User.objects.get(id=request.user.id)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class SubscriptionsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = api_serializers.CurrentUserSubscriptionSerializer
-    pagination_class = SubscriptionsPagination
+    pagination_class = CustomPageSizePagination
 
     def get_queryset(self):
         return Subscriptions.objects.filter(subscriber=self.request.user)
-    # filter_backends = (DjangoFilterBackend,)
-    # filter_class = IngredientsFilter
