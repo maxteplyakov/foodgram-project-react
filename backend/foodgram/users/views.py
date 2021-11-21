@@ -1,15 +1,11 @@
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
+
 from rest_framework.response import Response
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly,
-)
-from djoser import signals, utils
-from djoser.compat import get_user_email
+from rest_framework.permissions import IsAuthenticated
 from djoser.conf import settings
 
 from .serializers import UserCreateSerializer
@@ -28,20 +24,11 @@ class UserViewSet(viewsets.ModelViewSet):
     token_generator = default_token_generator
     lookup_field = settings.USER_ID_FIELD
 
-    def permission_denied(self, request, **kwargs):
-        if (
-            settings.HIDE_USERS
-            and request.user.is_authenticated
-            and self.action in ["update", "partial_update", "list", "retrieve"]
-        ):
-            raise NotFound()
-        super().permission_denied(request, **kwargs)
-
     def get_queryset(self):
         user = self.request.user
         queryset = super().get_queryset()
-        if settings.HIDE_USERS and self.action == "list" and not user.is_staff:
-            queryset = queryset.filter(pk=user.pk)
+        # if settings.HIDE_USERS and self.action == "list" and not user.is_staff:
+        #     queryset = queryset.filter(pk=user.pk)
         return queryset
 
     def get_permissions(self):
@@ -51,6 +38,8 @@ class UserViewSet(viewsets.ModelViewSet):
             self.permission_classes = settings.PERMISSIONS.user_list
         elif self.action == "set_password":
             self.permission_classes = settings.PERMISSIONS.set_password
+        elif self.action == "destroy" or self.action == "me":
+            self.permission_classes = settings.PERMISSIONS.user_delete
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -65,24 +54,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_instance(self):
         return self.request.user
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        serializer.save()
-        signals.user_registered.send(
-            sender=self.__class__, user=user, request=self.request
-        )
-
-        context = {"user": user}
-        to = [get_user_email(user)]
-        if settings.SEND_ACTIVATION_EMAIL:
-            settings.EMAIL.activation(self.request, context).send(to)
-        elif settings.SEND_CONFIRMATION_EMAIL:
-            settings.EMAIL.confirmation(self.request, context).send(to)
-
     @action(["get"], detail=False)
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
-
         if request.method == "GET":
             return self.retrieve(request, *args, **kwargs)
 
@@ -94,15 +68,6 @@ class UserViewSet(viewsets.ModelViewSet):
         self.request.user.set_password(serializer.data["new_password"])
         self.request.user.save()
 
-        if settings.PASSWORD_CHANGED_EMAIL_CONFIRMATION:
-            context = {"user": self.request.user}
-            to = [get_user_email(self.request.user)]
-            settings.EMAIL.password_changed_confirmation(self.request, context).send(to)
-
-        if settings.LOGOUT_ON_PASSWORD_CHANGE:
-            utils.logout_user(self.request)
-        elif settings.CREATE_SESSION_ON_LOGIN:
-            update_session_auth_hash(self.request, self.request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(

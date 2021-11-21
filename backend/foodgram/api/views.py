@@ -7,28 +7,23 @@ from django.db.models import Sum
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (AllowAny, IsAuthenticated)
 
-from . import serializers, models
+from . import serializers, models, permissions
 from .filters import IngredientsFilter, RecipeFilter
 from users.paginators import CustomPageSizePagination
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = [IsAdmin | ReadOnly]
     pagination_class = None
     serializer_class = serializers.TagSerializer
     queryset = models.Tag.objects.all()
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    # permission_classes = [IsAdmin | ReadOnly]
     pagination_class = None
     serializer_class = serializers.IngredientSerializer
     queryset = models.Ingredient.objects.all()
-    # filter_backends = (DjangoFilterBackend,)
     filter_class = IngredientsFilter
 
 
@@ -38,6 +33,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'delete']
     pagination_class = CustomPageSizePagination
     filter_class = RecipeFilter
+    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.action == "create":
+            self.permission_classes = [IsAuthenticated]
+        elif self.action in ("update", "destroy"):
+            self.permission_classes = [permissions.IsAuthorOrReadONly]
+        return super().get_permissions()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

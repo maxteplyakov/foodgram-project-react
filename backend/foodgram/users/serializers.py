@@ -35,7 +35,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=150, validators=[UniqueValidator(User.objects.all())])
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
-    password = serializers.CharField()
+    password = serializers.CharField(write_only=True)
 
     default_error_messages = {
         "cannot_create_user": settings.CONSTANTS.messages.CANNOT_CREATE_USER_ERROR
@@ -61,8 +61,5 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def perform_create(self, validated_data):
         with transaction.atomic():
-            user = User.objects.create_user(**validated_data)
-            if settings.SEND_ACTIVATION_EMAIL:
-                user.is_active = False
-                user.save(update_fields=["is_active"])
+            user = MyCustomUser.objects.create_user(**validated_data)
         return user
