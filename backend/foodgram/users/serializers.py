@@ -5,7 +5,7 @@ from djoser.conf import settings
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from .models import MyCustomUser, Subscriptions
+from .models import CustomUser, Subscription
 
 User = get_user_model()
 
@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get("request")
-        if request.user.is_authenticated and Subscriptions.objects.filter(author=obj, subscriber=request.user).exists():
+        if request.user.is_authenticated and Subscription.objects.filter(author=obj, subscriber=request.user).exists():
             return True
         return False
 
@@ -41,7 +41,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     }
 
     class Meta:
-        model = MyCustomUser
+        model = CustomUser
         fields = ['email', 'id', 'username', 'first_name', 'last_name', 'password']
 
     read_only_fields = ['id']
@@ -60,5 +60,5 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def perform_create(self, validated_data):
         with transaction.atomic():
-            user = MyCustomUser.objects.create_user(**validated_data)
+            user = CustomUser.objects.create_user(**validated_data)
         return user

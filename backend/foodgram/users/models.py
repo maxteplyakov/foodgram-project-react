@@ -2,20 +2,23 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class MyCustomUser(AbstractUser):
+class CustomUser(AbstractUser):
     email = models.EmailField(blank=False, unique=True)
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
     USERNAME_FIELD = 'email'
 
 
-class Subscriptions(models.Model):
+class Subscription(models.Model):
     author = models.ForeignKey(
-        MyCustomUser, on_delete=models.CASCADE, related_name='subscribers'
+        CustomUser, on_delete=models.CASCADE, related_name='subscribers'
     )
     subscriber = models.ForeignKey(
-        MyCustomUser, on_delete=models.CASCADE, related_name='subscribed_to'
+        CustomUser, on_delete=models.CASCADE, related_name='subscribed_to'
     )
 
     class Meta:
-        unique_together = ['author', 'subscriber']
+        constraints = [models.UniqueConstraint(
+        fields=['author', 'subscriber'],
+        name='unique_author_in_subscriptions'
+        ), ]
         ordering = ['-author__username']

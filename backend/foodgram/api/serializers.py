@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers
+from rest_framework import serializers, validators
 
 import users
 from users.serializers import UserSerializer
@@ -59,6 +59,12 @@ class FavoriteSerializer(serializers.ModelSerializer):
             'user': {'write_only': True},
             'recipe': {'write_only': True}
         }
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=models.Favorite.objects.all(),
+                fields=['user', 'recipe']
+            )
+        ]
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
@@ -75,6 +81,12 @@ class ShoppingListSerializer(serializers.ModelSerializer):
             'user': {'write_only': True},
             'recipe': {'write_only': True}
         }
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=models.ShoppingList.objects.all(),
+                fields=['user', 'recipe']
+            )
+        ]
 
 
 class SubscriptionRecipesSerializer(serializers.ModelSerializer):
@@ -95,7 +107,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     recipes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = users.models.Subscriptions
+        model = users.models.Subscription
         fields = [
             'email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count'
         ]
@@ -106,7 +118,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get("request")
-        if request.user.is_authenticated and users.models.Subscriptions.objects.filter(
+        if request.user.is_authenticated and users.models.Subscription.objects.filter(
                 author=obj, subscriber=request.user
         ).exists():
             return True
@@ -119,7 +131,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         request = self.context['request']
         author = User.objects.get(pk=self.initial_data['author'])
         if request._request.method == 'GET':
-            if users.models.Subscriptions.objects.filter(author=author, subscriber=request.user).exists():
+            if users.models.Subscription.objects.filter(author=author, subscriber=request.user).exists():
                 raise serializers.ValidationError('Вы уже подписаны на этого автора')
             if author == request.user:
                 raise serializers.ValidationError('Вы не можете подписаться на себя')
@@ -138,7 +150,7 @@ class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
     recipes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = users.models.Subscriptions
+        model = users.models.Subscription
         fields = [
             'email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count'
         ]
@@ -149,7 +161,7 @@ class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get("request")
-        if request.user.is_authenticated and users.models.Subscriptions.objects.filter(
+        if request.user.is_authenticated and users.models.Subscription.objects.filter(
                 author=obj.author, subscriber=request.user
         ).exists():
             return True

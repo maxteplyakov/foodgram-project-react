@@ -1,12 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import MyCustomUser, Subscriptions
+from .models import CustomUser, Subscription
 
 
-@admin.register(Subscriptions)
+@admin.register(Subscription)
 class SubscriptionsAdmin(admin.ModelAdmin):
     list_display = ('pk', 'author', 'subscriber',)
 
 
-admin.site.register(MyCustomUser, UserAdmin)
+admin.site.register(CustomUser, UserAdmin)

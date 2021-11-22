@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from api import serializers as api_serializers
 
-from .models import Subscriptions
+from .models import Subscription
 from .paginators import CustomPageSizePagination
 from .serializers import UserCreateSerializer
 
@@ -83,11 +83,11 @@ class UserViewSet(viewsets.ModelViewSet):
             }
             serializer = api_serializers.SubscriptionSerializer(author, data=data, context={'request': request})
             if serializer.is_valid(raise_exception=True):
-                Subscriptions.objects.create(author=author, subscriber=subscriber)
+                Subscription.objects.create(author=author, subscriber=subscriber)
 
                 return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            record = get_object_or_404(Subscriptions, author=author, subscriber=subscriber)
+            record = get_object_or_404(Subscription, author=author, subscriber=subscriber)
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -98,4 +98,4 @@ class SubscriptionsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = CustomPageSizePagination
 
     def get_queryset(self):
-        return Subscriptions.objects.filter(subscriber=self.request.user)
+        return Subscription.objects.filter(subscriber=self.request.user)
