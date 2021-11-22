@@ -22,4 +22,3 @@ class IngredientsInRecepieAdmin(admin.ModelAdmin):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('author', 'name', 'text', 'cooking_time', 'pub_date')
     list_filter = ('author',)
-

@@ -232,7 +232,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Recipe update."""
         ingredients_data = validated_data.pop("recipe_amount")
-        ingredients = (instance.recipe_amount).all()
+        ingredients = instance.recipe_amount.all()
         ingredients = list(ingredients)
         tags_data = validated_data.pop("tags")
         instance.name = validated_data.get('name', instance.name)

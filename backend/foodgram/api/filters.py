@@ -29,15 +29,14 @@ class RecipeFilter(FilterSet):
         ]
 
     def is_shopping_cart(self, queryset, name, value):
-        if value is True:
+        if value:
             return queryset.filter(shopping_list__user=self.request.user)
-        elif value is False:
+        else:
             return queryset.exclude(shopping_list__user=self.request.user)
-        return queryset
 
     def is_favorite(self, queryset, name, value):
-        if value is True:
+        if value:
             return queryset.filter(favorited_by__user=self.request.user)
-        elif value is False:
+        else:
             return queryset.exclude(favorited_by__user=self.request.user)
-        return queryset
+
