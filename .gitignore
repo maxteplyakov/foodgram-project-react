@@ -126,9 +126,9 @@ venv.bak/
 # devDB files
 db.sqlite3
 db.sqlite3-2
-/migrations
-.migrations
-migrations/
+#/migrations
+#.migrations
+#migrations/
 .dmypy.json
 dmypy.json
 
