@@ -1,17 +1,18 @@
 import time
 
-from django.shortcuts import get_object_or_404
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, HttpResponseNotFound
 from django.db.models import Sum
-from rest_framework import viewsets, status
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import get_object_or_404
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import (AllowAny, IsAuthenticated)
 
-from . import serializers, models, permissions
-from .filters import IngredientsFilter, RecipeFilter
 from users.paginators import CustomPageSizePagination
+
+from . import models, permissions, serializers
+from .filters import IngredientsFilter, RecipeFilter
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):

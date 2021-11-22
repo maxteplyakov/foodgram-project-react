@@ -1,18 +1,17 @@
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
+from djoser.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from djoser.conf import settings
+from rest_framework.response import Response
 
-from .serializers import UserCreateSerializer
-from .models import Subscriptions
-from .paginators import CustomPageSizePagination
 from api import serializers as api_serializers
 
+from .models import Subscriptions
+from .paginators import CustomPageSizePagination
+from .serializers import UserCreateSerializer
 
 User = get_user_model()
 

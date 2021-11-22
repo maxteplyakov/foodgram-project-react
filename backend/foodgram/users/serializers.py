@@ -1,12 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.core import exceptions as django_exceptions
 from django.db import IntegrityError, transaction
-from rest_framework import serializers
 from djoser.conf import settings
+from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from .models import MyCustomUser, Subscriptions
-
 
 User = get_user_model()
 
