@@ -44,16 +44,8 @@ class CreateIngredientsInRecepieSerializer(serializers.HyperlinkedModelSerialize
 
     class Meta:
         model = models.IngredientsInRecepie
-        fields = ['id', 'amount'] # , 'recipe']
-        # extra_kwargs = {
-        #     'recipe': {'write_only': True, 'required': False}
-        # }
-        # validators = [
-        #     validators.UniqueTogetherValidator(
-        #         queryset=models.IngredientsInRecepie.objects.all(),
-        #         fields=['id', 'recipe']
-        #     )
-        # ]
+        fields = ['id', 'amount']
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
 
@@ -226,12 +218,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
         model = models.Recipe
-        # validators = [
-        #     validators.UniqueTogetherValidator(
-        #         queryset=models.IngredientsInRecepie.objects.all(),
-        #         fields=['ingredients', 'id']
-        #     )
-        # ]
 
     def to_representation(self, obj):
         self.fields['tags'] = TagSerializer(many=True)

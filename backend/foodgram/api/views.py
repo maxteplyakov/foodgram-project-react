@@ -59,12 +59,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe': recipe.id
             }
             serializer = serializers.FavoriteSerializer(data=data)
-            if serializer.is_valid(raise_exception=True):
-                models.Favorite.objects.create(user=user, recipe=recipe)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.is_valid(raise_exception=True)
+            models.Favorite.objects.create(user=user, recipe=recipe)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         else:
-            record = get_object_or_404(models.Favorite, user=user, recipe=recipe)
+            record = get_object_or_404(
+                models.Favorite, user=user, recipe=recipe
+            )
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -81,12 +83,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe': recipe.id
             }
             serializer = serializers.ShoppingListSerializer(data=data)
-            if serializer.is_valid(raise_exception=True):
-                models.ShoppingList.objects.create(user=user, recipe=recipe)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.is_valid(raise_exception=True)
+            models.ShoppingList.objects.create(user=user, recipe=recipe)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         else:
-            record = get_object_or_404(models.ShoppingList, user=user, recipe=recipe)
+            record = get_object_or_404(
+                models.ShoppingList, user=user, recipe=recipe
+            )
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -96,23 +100,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         user = request.user
-        filename = f'user_{user.id}_shopping_list_{time.strftime("%Y%m%d")}.txt'
-        user_recipes = []
-        for recipe in models.ShoppingList.objects.filter(user=user):
-            user_recipes.append(recipe.recipe_id)
+        filename = f'user_{user.id}_shoppinglist_{time.strftime("%Y%m%d")}.txt'
+        user_recipes = models.ShoppingList.objects.filter(
+            user=user
+        ).values_list('recipe_id')
         ingredients_amount = models.Ingredient.objects.filter(
             ingredientsinrecepie__recipe_id__in=user_recipes
         ).annotate(total_amount=Sum('ingredientsinrecepie__amount'))
 
-        fs = FileSystemStorage()
-        with open('media/'+filename, 'w', encoding='utf-8') as file:
-            for ingredient in ingredients_amount:
-                file.write(f'{ingredient.name} ({ingredient.measurement_unit}) - {ingredient.total_amount} \n')
-
-        if fs.exists(filename):
-            with fs.open(filename) as file:
-                response = HttpResponse(file, content_type='text/plain')
-                response['Content-Disposition'] = f'attachment; filename={filename}'
-                return response
-        else:
-            return HttpResponseNotFound('The requested pdf was not found in our server.')
+        lines = []
+        for ingredient in ingredients_amount:
+            lines.append(
+                f'{ingredient.name} ({ingredient.measurement_unit})'
+                f' - {ingredient.total_amount} \n'
+            )
+        response_content = ''.join(lines)
+        response = HttpResponse(
+            response_content, content_type="text/plain,charset=utf8"
+        )
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(
+            filename
+        )
+        return response
