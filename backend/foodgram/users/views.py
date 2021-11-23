@@ -26,8 +26,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         queryset = super().get_queryset()
-        # if settings.HIDE_USERS and self.action == "list" and not user.is_staff:
-        #     queryset = queryset.filter(pk=user.pk)
         return queryset
 
     def get_permissions(self):
@@ -63,8 +61,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        self.request.user.set_password(serializer.data["new_password"])
+        self.request.user.set_password(
+            serializer.validated_data["new_password"]
+        )
         self.request.user.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -81,13 +80,19 @@ class UserViewSet(viewsets.ModelViewSet):
                 'author': author.id,
                 'subscriber': subscriber.id
             }
-            serializer = api_serializers.SubscriptionSerializer(author, data=data, context={'request': request})
-            if serializer.is_valid(raise_exception=True):
-                Subscription.objects.create(author=author, subscriber=subscriber)
+            serializer = api_serializers.SubscriptionSerializer(
+                author, data=data, context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            Subscription.objects.create(
+                author=author, subscriber=subscriber
+            )
 
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            record = get_object_or_404(Subscription, author=author, subscriber=subscriber)
+            record = get_object_or_404(
+                Subscription, author=author, subscriber=subscriber
+            )
             record.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 

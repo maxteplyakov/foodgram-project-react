@@ -17,8 +17,10 @@ class Subscription(models.Model):
     )
 
     class Meta:
-        constraints = [models.UniqueConstraint(
-        fields=['author', 'subscriber'],
-        name='unique_author_in_subscriptions'
-        ), ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'subscriber'],
+                name='unique_author_in_subscriptions'
+            ),
+        ]
         ordering = ['-author__username']

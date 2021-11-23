@@ -19,19 +19,24 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed'
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed'
         ]
 
     def get_is_subscribed(self, obj):
         request = self.context.get("request")
-        if request.user.is_authenticated and Subscription.objects.filter(author=obj, subscriber=request.user).exists():
-            return True
-        return False
+        return request.user.is_authenticated and Subscription.objects.filter(
+            author=obj, subscriber=request.user
+        ).exists()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length=254, validators=[UniqueValidator(User.objects.all())])
-    username = serializers.CharField(max_length=150, validators=[UniqueValidator(User.objects.all())])
+    email = serializers.EmailField(
+        max_length=254, validators=[UniqueValidator(User.objects.all())]
+    )
+    username = serializers.CharField(
+        max_length=150, validators=[UniqueValidator(User.objects.all())]
+    )
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True)
@@ -42,7 +47,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'id', 'username', 'first_name', 'last_name', 'password']
+        fields = [
+            'email', 'id', 'username', 'first_name', 'last_name', 'password'
+        ]
 
     read_only_fields = ['id']
     write_only_fields = ['password']

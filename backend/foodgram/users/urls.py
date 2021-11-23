@@ -5,7 +5,7 @@ from users.views import SubscriptionsViewSet, UserViewSet
 
 router = DefaultRouter()
 router.register("users/subscriptions", SubscriptionsViewSet, basename='subscriptions')
-router.register("users", UserViewSet)
+router.register("users", UserViewSet, basename='users')
 
 User = get_user_model()
 

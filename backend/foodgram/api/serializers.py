@@ -133,7 +133,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
-        author = User.objects.get_object_or_404(pk=self.initial_data['author'])
+        author = get_object_or_404(User, pk=self.initial_data['author'])
         if request._request.method == 'GET':
             if users.models.Subscription.objects.filter(
                     author=author, subscriber=request.user

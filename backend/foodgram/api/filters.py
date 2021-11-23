@@ -15,7 +15,9 @@ class IngredientsFilter(FilterSet):
 
 class RecipeFilter(FilterSet):
     author = filters.CharFilter(field_name="author__id", lookup_expr="exact")
-    tags = filters.AllValuesMultipleFilter(field_name="tags__slug", lookup_expr="iexact")
+    tags = filters.AllValuesMultipleFilter(
+        field_name="tags__slug", lookup_expr="iexact"
+    )
     is_in_shopping_cart = filters.BooleanFilter(method="is_shopping_cart")
     is_favorited = filters.BooleanFilter(method="is_favorite")
 
@@ -39,4 +41,3 @@ class RecipeFilter(FilterSet):
             return queryset.filter(favorited_by__user=self.request.user)
         else:
             return queryset.exclude(favorited_by__user=self.request.user)
-
