@@ -23,11 +23,6 @@ class UserViewSet(viewsets.ModelViewSet):
     token_generator = default_token_generator
     lookup_field = settings.USER_ID_FIELD
 
-    def get_queryset(self):
-        user = self.request.user
-        queryset = super().get_queryset()
-        return queryset
-
     def get_permissions(self):
         if self.action == "create":
             self.permission_classes = settings.PERMISSIONS.user_create

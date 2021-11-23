@@ -42,7 +42,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     default_error_messages = {
-        "cannot_create_user": settings.CONSTANTS.messages.CANNOT_CREATE_USER_ERROR
+        "cannot_create_user":
+            settings.CONSTANTS.messages.CANNOT_CREATE_USER_ERROR
     }
 
     class Meta:

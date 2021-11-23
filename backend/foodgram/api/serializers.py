@@ -38,7 +38,8 @@ class IngredientsInRecepieSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'name', 'measurement_unit', 'amount']
 
 
-class CreateIngredientsInRecepieSerializer(serializers.HyperlinkedModelSerializer):
+class CreateIngredientsInRecepieSerializer(
+        serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField()
     amount = serializers.IntegerField()
 
@@ -123,10 +124,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return request.user.is_authenticated and\
-               users.models.Subscription.objects.filter(
-                author=obj, subscriber=request.user
-               ).exists()
+        return request.user.is_authenticated and \
+            users.models.Subscription.objects.filter(
+                author=obj, subscriber=request.user).exists()
 
     def get_recipes_count(self, obj):
         return models.Recipe.objects.filter(author=obj).count()
@@ -172,10 +172,9 @@ class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return request.user.is_authenticated and\
-               users.models.Subscription.objects.filter(
-                   author=obj.author, subscriber=request.user
-               ).exists()
+        return request.user.is_authenticated and \
+            users.models.Subscription.objects.filter(
+                author=obj.author, subscriber=request.user).exists()
 
     def get_recipes_count(self, obj):
         return models.Recipe.objects.filter(author=obj.author).count()
@@ -229,16 +228,14 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         return request.user.is_authenticated and\
-               models.ShoppingList.objects.filter(
-                   recipe=obj, user=request.user
-               ).exists()
+            models.ShoppingList.objects.filter(
+               recipe=obj, user=request.user).exists()
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         return request.user.is_authenticated and\
-               models.Favorite.objects.filter(
-                   recipe=obj, user=request.user
-               ).exists()
+            models.Favorite.objects.filter(
+               recipe=obj, user=request.user).exists()
 
     def create(self, validated_data):
 
