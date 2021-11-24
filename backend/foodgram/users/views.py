@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api import serializers as api_serializers
-
 from .models import Subscription
 from .paginators import CustomPageSizePagination
 from .serializers import UserCreateSerializer
@@ -16,13 +15,7 @@ from .serializers import UserCreateSerializer
 User = get_user_model()
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = settings.SERIALIZERS.user
-    queryset = User.objects.all()
-    permission_classes = settings.PERMISSIONS.user
-    token_generator = default_token_generator
-    lookup_field = settings.USER_ID_FIELD
-
+class PermissionsMixin:
     def get_permissions(self):
         if self.action == "create":
             self.permission_classes = settings.PERMISSIONS.user_create
@@ -33,6 +26,14 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action == "destroy" or self.action == "me":
             self.permission_classes = settings.PERMISSIONS.user_delete
         return super().get_permissions()
+
+
+class UserViewSet(PermissionsMixin, viewsets.ModelViewSet):
+    serializer_class = settings.SERIALIZERS.user
+    queryset = User.objects.all()
+    permission_classes = settings.PERMISSIONS.user
+    token_generator = default_token_generator
+    lookup_field = settings.USER_ID_FIELD
 
     def get_serializer_class(self):
         if self.action == "create":

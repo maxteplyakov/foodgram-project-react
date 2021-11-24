@@ -27,13 +27,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filter_class = IngredientsFilter
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = models.Recipe.objects.all()
-    serializer_class = serializers.RecipeSerializer
-    http_method_names = ['get', 'post', 'put', 'delete']
-    pagination_class = CustomPageSizePagination
-    filter_class = RecipeFilter
-    permission_classes = [AllowAny]
+class PermissionsMixin:
 
     def get_permissions(self):
         if self.action == "create":
@@ -41,6 +35,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         elif self.action in ("update", "destroy"):
             self.permission_classes = [permissions.IsAuthorOrReadONly]
         return super().get_permissions()
+
+
+class RecipeViewSet(PermissionsMixin, viewsets.ModelViewSet):
+    queryset = models.Recipe.objects.all()
+    serializer_class = serializers.RecipeSerializer
+    http_method_names = ['get', 'post', 'put', 'delete']
+    pagination_class = CustomPageSizePagination
+    filter_class = RecipeFilter
+    permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

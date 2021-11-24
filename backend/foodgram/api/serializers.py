@@ -4,8 +4,6 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, validators
 
 import users
-from users.serializers import UserSerializer
-
 from . import models
 
 User = get_user_model()
@@ -124,9 +122,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return request.user.is_authenticated and \
-            users.models.Subscription.objects.filter(
-                author=obj, subscriber=request.user).exists()
+        return (request.user.is_authenticated and
+                users.models.Subscription.objects.filter(
+                    author=obj, subscriber=request.user).exists())
 
     def get_recipes_count(self, obj):
         return models.Recipe.objects.filter(author=obj).count()
@@ -172,9 +170,9 @@ class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return request.user.is_authenticated and \
-            users.models.Subscription.objects.filter(
-                author=obj.author, subscriber=request.user).exists()
+        return (request.user.is_authenticated and
+                users.models.Subscription.objects.filter(
+                    author=obj.author, subscriber=request.user).exists())
 
     def get_recipes_count(self, obj):
         return models.Recipe.objects.filter(author=obj.author).count()
@@ -191,7 +189,7 @@ class CurrentUserSubscriptionSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
 
     image = Base64ImageField()
-    author = UserSerializer(read_only=True)
+    author = users.serializers.UserSerializer(read_only=True)
     ingredients = CreateIngredientsInRecepieSerializer(
         source='recipe_amount',
         many=True,
@@ -227,15 +225,15 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        return request.user.is_authenticated and\
-            models.ShoppingList.objects.filter(
-               recipe=obj, user=request.user).exists()
+        return (request.user.is_authenticated and
+                models.ShoppingList.objects.filter(
+                    recipe=obj, user=request.user).exists())
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        return request.user.is_authenticated and\
-            models.Favorite.objects.filter(
-               recipe=obj, user=request.user).exists()
+        return (request.user.is_authenticated and
+                models.Favorite.objects.filter(
+                    recipe=obj, user=request.user).exists())
 
     def create(self, validated_data):
 
@@ -252,7 +250,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         super().update(recipe, validated_data)
         recipe.tags.clear()
         recipe.tags.set(tags_data)
-        recipe.save()
         recipe.ingredients.clear()
         self.create_ingredients_in_recipe(ingredients_data, recipe)
         return recipe
@@ -281,6 +278,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             if ingredient['id'] in ingredients_set:
                 raise serializers.ValidationError(
                     'Each ingredient could be mentioned only once'
+                )
+            elif ingredient['amount'] < 1:
+                raise serializers.ValidationError(
+                    'Ingredient amount should be positive integer'
                 )
             else:
                 ingredients_set.append(ingredient['id'])
