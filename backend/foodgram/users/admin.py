@@ -9,4 +9,7 @@ class SubscriptionsAdmin(admin.ModelAdmin):
     list_display = ('pk', 'author', 'subscriber',)
 
 
-admin.site.register(CustomUser, UserAdmin)
+@admin.register(CustomUser)
+class SubscriptionsAdmin(UserAdmin):
+    list_display = ('pk', 'email', 'username', 'first_name', 'last_name')
+    list_filter = ('email', 'username')

@@ -79,6 +79,7 @@ class IngredientsInRecepie(models.Model):
             fields=['ingredient', 'recipe'],
             name='unique_ingredient_in_recipe'
         ), ]
+        verbose_name = 'Ингридиенты в рецептах'
 
 
 class Favorite(models.Model):
